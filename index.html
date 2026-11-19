@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoVision: For a Sustainable Future | Smart Waste Classifier</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #fff0f6, #f9e1f0, #f5eaff);
+    color: #512d42;
+}
+
+/* NAVIGATION */
+header {
+    padding: 20px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+}
+
+.logo {
+    font-size: 23px;
+    font-weight: bold;
+    color: #d94d91;
+}
+
+nav a {
+    text-decoration: none;
+    color: #75435f;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+/* HERO */
+.hero {
+    padding: 70px 8%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.hero-text {
+    max-width: 600px;
+}
+
+.hero h1 {
+    font-size: 55px;
+    line-height: 1.1;
+    color: #b93e7c;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 17px;
+    line-height: 1.8;
+    color: #795b6b;
+}
+
+.hero-image {
+    font-size: 140px;
+    background: #ffd6e8;
+    padding: 45px;
+    border-radius: 40px;
+}
+
+.btn {
+    display: inline-block;
+    background: #e85b9c;
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.btn:hover {
+    background: #bd3979;
+}
+
+/* SECTIONS */
+section {
+    padding: 60px 8%;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 35px;
+    color: #bd3979;
+    margin-bottom: 15px;
+}
+
+.section-description {
+    text-align: center;
+    color: #795b6b;
+    margin-bottom: 35px;
+    line-height: 1.7;
+}
+
+/* CAMERA */
+.scanner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px #d77ca526;
+}
+
+.card h3 {
+    color: #c34483;
+    margin-bottom: 20px;
+}
+
+#camera {
+    background: #321f2b;
+    min-height: 280px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#camera canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.placeholder {
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.placeholder span {
+    font-size: 55px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stop-btn {
+    background: #8d7190;
+}
+
+#status {
+    margin-top: 15px;
+    color: #91627b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* RESULTS */
+.result-box {
+    background: #fff0f6;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+}
+
+.result-box h2 {
+    color: #d94d91;
+    font-size: 30px;
+    margin: 10px 0;
+    overflow-wrap: anywhere;
+}
+
+.progress {
+    background: #f1d4e3;
+    height: 12px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+    margin-bottom: 18px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #f78ab8, #a77bd0);
+    transition: width .3s;
+}
+
+.prediction {
+    margin: 15px 0;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* INFORMATION */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.info-card {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 5px 20px #d77ca51a;
+}
+
+.info-card .icon {
+    font-size: 45px;
+}
+
+.info-card h3 {
+    color: #c34483;
+    margin: 15px 0;
+}
+
+.info-card p {
+    color: #795b6b;
+    line-height: 1.7;
+}
+
+/* WASTE TYPES */
+.waste-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.waste-card {
+    padding: 30px;
+    border-radius: 22px;
+    background: white;
+}
+
+.waste-card h3 {
+    color: #c34483;
+    margin-bottom: 15px;
+}
+
+.waste-card p {
+    line-height: 1.7;
+    color: #795b6b;
+}
+
+/* FOOTER */
+footer {
+    background: #d94d91;
+    color: white;
+    text-align: center;
+    padding: 25px;
+}
+
+@media(max-width: 800px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 40px;
+    }
+
+    .scanner,
+    .info-grid,
+    .waste-grid {
+        grid-template-columns: 1fr;
+    }
+
+    nav a {
+        margin-left: 8px;
+        font-size: 13px;
+    }
+
+    .hero-image {
+        font-size: 90px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🌸 EcoVision</div>
+
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#scanner">AI Scanner</a>
+        <a href="#about">About</a>
+        <a href="#community">Community</a>
+    </nav>
+</header>
+
+<!-- HOME -->
+<div class="hero" id="home">
+
+    <div class="hero-text">
+        <h1>Sort Smarter.<br>Live Greener. 🌱</h1>
+
+        <p>
+            Welcome to EcoVision! An AI-powered waste
+            classification system that helps identify
+            biodegradable and non-biodegradable materials
+            through your camera.
+        </p>
+
+        <a href="#scanner" class="btn"
+           style="text-decoration:none;">
+            Try AI Waste Scanner →
+        </a>
+    </div>
+
+    <div class="hero-image">🌎</div>
+
+</div>
+
+<!-- AI SCANNER -->
+<section id="scanner">
+
+    <h2 class="section-title">📸 Waste Scanner</h2>
+
+    <p class="section-description">
+        Activate your camera and show an object.
+        Our AI model will automatically identify its
+        waste category.
+        "See It, Scan It, Sort It"
+    </p>
+
+    <div class="scanner">
+
+        <!-- CAMERA -->
+        <div class="card">
+
+            <h3>📷 Live Camera</h3>
+
+            <div id="camera">
+                <div class="placeholder">
+                    <span>📸</span>
+                    <p>Your camera will appear here.</p>
+                </div>
+            </div>
+
+            <div class="controls">
+
+                <button class="btn" id="startBtn"
+                        onclick="startCamera()">
+                    ▶ Start Camera
+                </button>
+
+                <button class="btn stop-btn" id="stopBtn"
+                        onclick="stopCamera()" disabled>
+                    ■ Stop Camera
+                </button>
+
+            </div>
+
+            <p id="status">
+                Camera is currently OFF.
+            </p>
+
+        </div>
+
+        <!-- RESULT -->
+        <div class="card">
+
+            <h3>✨ EcoVision Result</h3>
+
+            <div class="result-box">
+
+                <p>DETECTED CATEGORY</p>
+
+                <h2 id="result">
+                    Waiting...
+                </h2>
+
+                <p id="description">
+                    Start your camera to detect an object.
+                </p>
+
+                <br>
+
+                <strong>
+                    Confidence: <span id="confidence">0%</span>
+                </strong>
+
+                <div class="progress">
+                    <div class="progress-bar"
+                         id="mainBar"></div>
+                </div>
+
+            </div>
+
+            <h3>All Predictions</h3>
+
+            <div id="predictions">
+                <p>AI predictions will appear here.</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+
+    <h2 class="section-title">
+        🌷 Why EcoVision Matters
+    </h2>
+
+    <p class="section-description">
+        Technology can help people understand the importance
+        of proper waste management and environmental protection.
+    </p>
+
+    <div class="info-grid">
+
+        <div class="info-card">
+            <div class="icon">🌱</div>
+            <h3>Environmental Protection</h3>
+            <p>
+                Proper waste segregation helps reduce pollution,
+                protect natural resources, and prevent waste
+                from contaminating the environment.
+            </p>
+        </div>
+
+        <div class="info-card">
+            <div class="icon">🏡</div>
+            <h3>Cleaner Community</h3>
+            <p>
+                Encourages residents and students to practice
+                responsible waste disposal and maintain
+                cleaner surroundings.
+            </p>
+        </div>
+
+        <div class="info-card">
+            <div class="icon">🤖</div>
+            <h3>AI Technology</h3>
+            <p>
+                Demonstrates how artificial intelligence can
+                support environmental education and make
+                waste classification more interactive.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<!-- COMMUNITY -->
+<section id="community">
+
+    <h2 class="section-title">
+        ♻️ Know Your Waste
+    </h2>
+
+    <p class="section-description">
+        Learn the difference between biodegradable
+        and non-biodegradable materials.
+    </p>
+
+    <div class="waste-grid">
+
+        <div class="waste-card">
+            <h3>🌿 Biodegradable Waste</h3>
+
+            <p>
+                These are materials that can naturally
+                decompose through microorganisms under
+                suitable environmental conditions.
+            </p>
+
+            <br>
+
+            <strong>Examples:</strong>
+
+            <p>
+                🍌 Fruit peels<br>
+                🍂 Dry leaves<br>
+                🥬 Vegetable scraps<br>
+                🍚 Food leftovers<br>
+                📄 Untreated paper
+            </p>
+        </div>
+
+        <div class="waste-card">
+            <h3>🧴 Non-Biodegradable Waste</h3>
+
+            <p>
+                These are materials that do not easily
+                decompose naturally and may remain
+                in the environment for a long time.
+            </p>
+
+            <br>
+
+            <strong>Examples:</strong>
+
+            <p>
+                🧴 Plastic bottles<br>
+                🛍️ Plastic wrappers<br>
+                🥫 Metal cans<br>
+                🍾 Glass bottles<br>
+                🧵 Synthetic materials
+            </p>
+        </div>
+
+    </div>
+
+    <div style="
+        text-align:center;
+        margin-top:40px;
+        background:#f7d5e6;
+        padding:35px;
+        border-radius:25px;">
+
+        <h2 style="color:#b93e7c;">
+            💗 Our Community, Our Responsibility
+        </h2>
+
+        <p style="margin-top:15px;line-height:1.8;">
+            Start segregating today. Reduce waste,
+            recycle materials, and protect our environment
+            for the next generation.
+        </p>
+
+    </div>
+
+</section>
+
+<footer>
+    <h3>🌸 EcoVision</h3>
+    <p>Sort Smarter. Live Greener.</p>
+    <p>AI-Powered Waste Classification Project</p>
+</footer>
+
+<script>
+
+// YOUR TEACHABLE MACHINE MODEL
+const MODEL_URL =
+"https://teachablemachine.withgoogle.com/models/uNv93hZA1E/";
+
+let model;
+let webcam;
+let running = false;
+let animationId;
+
+// LOAD MODEL AND START CAMERA
+async function startCamera() {
+
+    if (running) return;
+
+    const startBtn = document.getElementById("startBtn");
+    startBtn.disabled = true;
+
+    document.getElementById("status").innerText =
+        "Loading AI model...";
+
+    try {
+
+        // LOAD TRAINED MODEL
+        if (!model) {
+            model = await tmImage.load(
+                MODEL_URL + "model.json",
+                MODEL_URL + "metadata.json"
+            );
+        }
+
+        document.getElementById("status").innerText =
+            "Requesting camera permission...";
+
+        // INITIALIZE WEBCAM
+        webcam = new tmImage.Webcam(360, 270, true);
+
+        await webcam.setup();
+        await webcam.play();
+
+        running = true;
+
+        // DISPLAY CAMERA
+        const camera = document.getElementById("camera");
+
+        camera.innerHTML = "";
+        camera.appendChild(webcam.canvas);
+
+        document.getElementById("status").innerText =
+            "Camera ON! Show an object to the camera.";
+
+        document.getElementById("stopBtn").disabled = false;
+
+        // START AUTOMATIC DETECTION
+        loop();
+
+    } catch (error) {
+
+        console.error(error);
+
+        startBtn.disabled = false;
+
+        document.getElementById("status").innerText =
+            "Unable to start camera. Allow camera permission and use HTTPS or localhost.";
+
+        if (webcam) {
+            try { webcam.stop(); } catch(e) {}
+            webcam = null;
+        }
+    }
+}
+
+// AUTOMATIC PREDICTION LOOP
+async function loop() {
+
+    if (!running || !webcam) return;
+
+    webcam.update();
+
+    try {
+
+        const predictions =
+            await model.predict(webcam.canvas);
+
+        // SORT HIGHEST CONFIDENCE FIRST
+        predictions.sort(
+            (a, b) => b.probability - a.probability
+        );
+
+        const best = predictions[0];
+
+        const percentage =
+            Math.round(best.probability * 100);
+
+        // DISPLAY MAIN RESULT
+        const label = best.className;
+
+        document.getElementById("result").innerText =
+            label;
+
+        document.getElementById("confidence").innerText =
+            percentage + "%";
+
+        document.getElementById("mainBar").style.width =
+            percentage + "%";
+
+        // CATEGORY DESCRIPTION
+        const category = label.toLowerCase();
+
+        let description =
+            "This is the category predicted by your AI model. Follow local waste disposal guidance.";
+
+        if (category.includes("non")) {
+
+            description =
+                "Likely non-biodegradable! Check if this material can be reused or recycled.";
+
+        } else if (category.includes("bio")) {
+
+            description =
+                "Likely biodegradable! Consider proper organic waste disposal or composting where available.";
+        }
+
+        document.getElementById("description").innerText =
+            description;
+
+        // DISPLAY ALL PREDICTIONS
+        const output =
+            document.getElementById("predictions");
+
+        output.innerHTML = "";
+
+        predictions.forEach(prediction => {
+
+            const score = Math.round(
+                prediction.probability * 100
+            );
+
+            const row = document.createElement("div");
+            row.className = "prediction";
+
+            const labelText = document.createElement("div");
+            labelText.textContent =
+                prediction.className + " — " + score + "%";
+
+            const track = document.createElement("div");
+            track.className = "progress";
+
+            const bar = document.createElement("div");
+            bar.className = "progress-bar";
+            bar.style.width = score + "%";
+
+            track.appendChild(bar);
+            row.append(labelText, track);
+            output.appendChild(row);
+
+        });
+
+    } catch (error) {
+        console.error("Prediction error:", error);
+    }
+
+    if (running) {
+        animationId = requestAnimationFrame(loop);
+    }
+}
+
+// STOP CAMERA
+function stopCamera() {
+
+    running = false;
+
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+
+    if (webcam) {
+        webcam.stop();
+        webcam = null;
+    }
+
+    document.getElementById("camera").innerHTML = `
+        <div class="placeholder">
+            <span>📸</span>
+            <p>Your camera will appear here.</p>
+        </div>
+    `;
+
+    document.getElementById("result").innerText =
+        "Waiting...";
+
+    document.getElementById("description").innerText =
+        "Start your camera to detect an object.";
+
+    document.getElementById("confidence").innerText =
+        "0%";
+
+    document.getElementById("mainBar").style.width =
+        "0%";
+
+    document.getElementById("predictions").innerHTML =
+        "<p>AI predictions will appear here.</p>";
+
+    document.getElementById("status").innerText =
+        "Camera is OFF.";
+
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("stopBtn").disabled = true;
+}
+
+window.addEventListener("beforeunload", () => {
+    if (webcam) webcam.stop();
+});
+
+</script>
+
+</body>
+</html>
+```[cite: 1]
